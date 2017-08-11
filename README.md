@@ -9,16 +9,15 @@ your friendly XML navigator
 XML is this new hot markup language everyone is raving about. Attributes, namespaces, schemas, security, XSL.. what's there not to love.
 
 `xml-in` is not about parsing XML, but rather working with already parsed XML.
-It takes heavily nested `{:tag .. :attrs .. :content [...]}` structures that Clojure XML parsers produce and allows to navigate
-this structures in a Clojure's "`get-in` style" using internal or custom transducers.
 
-[clojure/data.xml](https://github.com/clojure/data.xml) is an example of a good and lazy Clojure/ClojureScript XML parser
-[funcool/tubax](https://github.com/funcool/tubax) is another example of ClojureScript XML parser
+It takes heavily nested `{:tag .. :attrs .. :content [...]}` structures that Clojure XML parsers produce and helps to navigate these structures in a Clojure "`get-in` style" using internal and custom transducers.
+
+* _[clojure/data.xml](https://github.com/clojure/data.xml) is an example of a good and lazy Clojure/ClojureScript XML parser_
+* _[funcool/tubax](https://github.com/funcool/tubax) is another example of a ClojureScript XML parser_
 
 ## Why
 
-The most common XML navigation is done via zippers. [clojure/data.zip](https://github.com/clojure/data.zip) is usially used
-and a common navigation looks like this:
+The most common XML navigation in Clojure is done via zippers. [clojure/data.zip](https://github.com/clojure/data.zip) is usially used, and a common navigation looks like this:
 
 ```clojure
 (data.zip/xml1-> (clojure.zip/xml-zip parsed-xml)
@@ -30,28 +29,40 @@ and a common navigation looks like this:
                  data.zip/text)
 ```
 
-There is a great article [XML for fun and profit](http://blog.korny.info/2014/03/08/xml-for-fun-and-profit.html) that shows how zippers
+There is a great article "[XML for fun and profit](http://blog.korny.info/2014/03/08/xml-for-fun-and-profit.html)" that shows how zippers
 are used to navigate XML DOM trees.
 
-But we can do better: faster, cleaner, composable and no zippers.
+But we can do better: faster, cleaner, composable and "no zippers".
 
 How much faster? Let's see:
 
-zippers
+zippers:
 ```clojure
-boot.user=> (time (dotimes [_ 250000] (data.zip/xml1-> (clojure.zip/xml-zip parsed-xml) :universe :system :delta-orionis :δ-ori-aa1 :radius data.zip/text)))
+boot.user=> (time (dotimes [_ 250000] 
+                    (data.zip/xml1-> (clojure.zip/xml-zip parsed-xml)
+                                     :universe
+                                     :system
+                                     :delta-orionis
+                                     :δ-ori-aa1
+                                     :radius
+                                     data.zip/text)))
 "Elapsed time: 13385.563442 msecs"
 ```
 
-xml-iz
+xml-in:
 ```clojure
-boot.user=> (time (dotimes [_ 250000] (xml/find-first parsed-xml [:universe :system :delta-orionis :δ-ori-aa1 :radius])))
+=> (time (dotimes [_ 250000]
+     (xml/find-first parsed-xml [:universe
+                                 :system
+                                 :delta-orionis
+                                 :δ-ori-aa1
+                                 :radius])))
 "Elapsed time: 765.884111 msecs"
 ```
 
-## Most common navigation
+## Property based navigation
 
-Here is an XML document all the examples are based on:
+Here is an XML document all the examples in this documentation are based on:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -76,9 +87,9 @@ Here is an XML document all the examples are based on:
 </universe>
 ```
 
-it lives in [dev-resources/universe.xml](dev-resources/universe.xml)
+> _it lives in [dev-resources/universe.xml](dev-resources/universe.xml)_
 
-Since `xml-in` works with a parsed XML (e.g. a DOM tree), let's parse it once and call it `universe`:
+Since `xml-in` works with a parsed XML (e.g. a DOM tree), let's parse it once and call it the "`universe`":
 
 ```clojure
 => (require '[clojure.data.xml :as dx])
@@ -86,7 +97,7 @@ Since `xml-in` works with a parsed XML (e.g. a DOM tree), let's parse it once an
 #'boot.user/universe
 ```
 
-it gets parsed in a common nested `{:tag :attrs :content}` structure that looks like this:
+it gets parsed into a common nested `{:tag :attrs :content}` structure that looks like this:
 
 ```clojure
 => (pprint universe)
@@ -107,9 +118,11 @@ it gets parsed in a common nested `{:tag :attrs :content}` structure that looks 
       ;; ...
 ```
 
-In order to access child nodes `xml-in` takes a direct vector path to them. For example, let's check out "those two" planets in a solar system.
+One way to access child nodes in this XML document is to use "a vector of nested properties".
 
-Bringint `xml-in` in:
+For example, let's check out "those two" planets in a solar system.
+
+Bringing `xml-in` in:
 
 ```clojure
 => (require '[xml-in.core :as xml])
@@ -133,10 +146,10 @@ notice `find-all` vs. `find-first`
 
 ### All matching vs. The first matching
 
-Even if there is only one element that matches a search criteria it is best to not look for it using `find-all`
-since there is a cost of _looking_ at all the child nodes that are on the same level and a matched element.
+Even if there is only one element that matches a search criteria it is best to _not_ look for it using `find-all`
+since there is a cost of _looking_ at **all** the child nodes that are on the same level as a matched element.
 
-Let's look at the example. From the XML above, let's find a `radius` of `δ-ori-aa1` in a `delta-orionis` star system:
+Let's look at the example. From the XML above, let's find a `radius` of `δ-ori-aa1` component of the `delta-orionis` star system:
 
 ```clojure
 boot.user=> (xml/find-all universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])
@@ -145,17 +158,19 @@ boot.user=> (xml/find-first universe [:universe :system :delta-orionis :δ-ori-a
 "16.5"
 ```
 
-Both `find-all` and `find-first` return the same exact value, but we know that there `δ-ori-aa1` has only one `radius`.
+Both `find-all` and `find-first` return the same exact value, but we know for a fact that the `δ-ori-aa1` component has only _one_ `radius`. Which means it best found with `find-first` rather than `find-all`.
 
 Let's see the performance difference:
 
 ```clojure
-=> (time (dotimes [_ 250000] (xml/find-all universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])))
+=> (time (dotimes [_ 250000]
+           (xml/find-all universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])))
 "Elapsed time: 1382.708085 msecs"
 ```
 
 ```clojure
-boot.user=> (time (dotimes [_ 250000] (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])))
+=> (time (dotimes [_ 250000]
+           (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])))
 "Elapsed time: 808.148405 msecs"
 ```
 
@@ -164,7 +179,7 @@ But it does improve performance, especially for a large number of XML documents.
 
 ## Functional navigation
 
-A functional navigation adds custom "predicate batteries" to the process.
+Navigation using functions, or rather transducers, adds custom "predicate batteries" to the process.
 
 A few internal batteries are included in `xml-in`:
 
@@ -188,7 +203,7 @@ Let's find all inhabitable planets of the solar system to the best of our knowle
 "Earth"
 ```
 
-a `find-in` function takes the parsed XML (i.e. 'dom') and a sequence of transducers, it then
+a `find-in` function takes the parsed XML (i.e. 'dom') and a sequence of transducers. It then
   
    * computes a sequence from the application of all the transducers composed
    * extracts singular values from the computed sequence
@@ -210,7 +225,7 @@ vs.
 
 ## Creating sub documents
 
-Let's say we need to get several properties out of `δ-ori-aa1`. We can do it as:
+Let's say we need to get several properties out of the `δ-ori-aa1` component. We can do it as:
 
 ```clojure
 => (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :mass])
@@ -221,10 +236,9 @@ Let's say we need to get several properties out of `δ-ori-aa1`. We can do it as
 "3.37"
 ```
 
-we can of course group `[:mass :radius :surface-gravity]` together and map over them to call `xml/find-first universe` with a prefix, but it would not change the fact
-that we would need to "get-into" `:universe :system :delta-orionis :δ-ori-aa1` every time.
+we can of course group `[:mass :radius :surface-gravity]` together and map over them to call `xml/find-first universe` with a prefix, but it would not change the fact that we would need to "get-into" "`:universe :system :delta-orionis :δ-ori-aa1`" on every property lookup.
 
-We can do better than this: navigate to `:universe :system :delta-orionis :δ-ori-aa1` once and treat is as a document instead:
+We can do better: navigate to `:universe :system :delta-orionis :δ-ori-aa1` _once_ and treat is as a document instead:
 
 ```clojure
 => (def aa1 (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1]))
@@ -244,18 +258,20 @@ to create a sub document no special syntax is needed, just search "upto" the new
 and in cases where it is applicable, using a sub document is a lot faster:
 
 ```clojure
-boot.user=> (time (dotimes [_ 100000] [(xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :mass])
-                                       (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])
-                                       (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :surface-gravity])]))
+boot.user=> (time (dotimes [_ 100000]
+                    [(xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :mass])
+                     (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])
+                     (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :surface-gravity])]))
 "Elapsed time: 1075.663006 msecs"
 ```
 
 vs.
 
 ```clojure
-boot.user=> (time (dotimes [_ 100000] [(xml/find-first aa1 [:mass])
-                                       (xml/find-first aa1 [:radius])
-                                       (xml/find-first aa1 [:surface-gravity])]))
+boot.user=> (time (dotimes [_ 100000]
+                    [(xml/find-first aa1 [:mass])
+                     (xml/find-first aa1 [:radius])
+                     (xml/find-first aa1 [:surface-gravity])]))
 "Elapsed time: 458.735225 msecs"
 ```
 
