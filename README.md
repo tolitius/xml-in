@@ -4,6 +4,13 @@ your friendly XML navigator
 
 [![Clojars Project](http://clojars.org/tolitius/xml-in/latest-version.svg)](http://clojars.org/tolitius/xml-in)
 
+- [What](#what)
+- [Why](#why)
+- [Property based navigation](#property-based-navigation)
+  - [All matching vs. The first matching](#all-matching-vs-the-first-matching)
+- [Functional navigation](#functional-navigation)
+- [Creating sub documents](#creating-sub-documents)
+
 ## What
 
 XML is this new hot markup language everyone is raving about. Attributes, namespaces, schemas, security, XSL.. what's there not to love.
@@ -17,7 +24,7 @@ It takes heavily nested `{:tag .. :attrs .. :content [...]}` structures that Clo
 
 ## Why
 
-The most common XML navigation in Clojure is done via zippers. [clojure/data.zip](https://github.com/clojure/data.zip) is usially used, and a common navigation looks like this:
+XML navigation in Clojure is usually done with help of zippers. [clojure/data.zip](https://github.com/clojure/data.zip) is usially used, and a common navigation looks like this:
 
 ```clojure
 (data.zip/xml1-> (clojure.zip/xml-zip parsed-xml)
@@ -146,19 +153,19 @@ notice `find-all` vs. `find-first`
 
 ### All matching vs. The first matching
 
-Even if there is only one element that matches a search criteria it is best to _not_ look for it using `find-all`
+Even if there is only one element that matches a search criteria it is best _not_ to look for it using `find-all`
 since there is a cost of _looking_ at **all** the child nodes that are on the same level as a matched element.
 
 Let's look at the example. From the XML above, let's find a `radius` of `δ-ori-aa1` component of the `delta-orionis` star system:
 
 ```clojure
-boot.user=> (xml/find-all universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])
+=> (xml/find-all universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])
 "16.5"
-boot.user=> (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])
+=> (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])
 "16.5"
 ```
 
-Both `find-all` and `find-first` return the same exact value, but we know for a fact that the `δ-ori-aa1` component has only _one_ `radius`. Which means it best found with `find-first` rather than `find-all`.
+Both `find-all` and `find-first` return the same exact value, but we know for a fact that the `δ-ori-aa1` component has only _one_ `radius`. Which means it is best found with `find-first` rather than `find-all`.
 
 Let's see the performance difference:
 
@@ -193,7 +200,7 @@ A few internal batteries are included in `xml-in`:
 
 * `attr=` finds child nodes under all tags with attribute's key and value
 
-Let's find all inhabitable planets of the solar system to the best of our knowledge (i.e. based on XML above):
+Let's find all inhabitable planets of the solar system to the best of our knowledge (i.e. based on the XML above):
 
 ```clojure
 => (xml/find-in universe [(tag= :universe)
@@ -203,7 +210,7 @@ Let's find all inhabitable planets of the solar system to the best of our knowle
 "Earth"
 ```
 
-a `find-in` function takes the parsed XML (i.e. 'dom') and a sequence of transducers. It then
+a `find-in` function takes a parsed XML and a sequence of transducers. It then
   
    * computes a sequence from the application of all the transducers composed
    * extracts singular values from the computed sequence
@@ -244,7 +251,7 @@ We can do better: navigate to `:universe :system :delta-orionis :δ-ori-aa1` _on
 => (def aa1 (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1]))
 #'boot.user/aa1
 ```
-```
+```clojure
 => (xml/find-first aa1 [:mass])
 "24"
 => (xml/find-first aa1 [:radius])
