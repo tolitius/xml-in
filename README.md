@@ -45,14 +45,14 @@ How much faster? Let's see:
 
 zippers:
 ```clojure
-boot.user=> (time (dotimes [_ 250000] 
-                    (data.zip/xml1-> (clojure.zip/xml-zip parsed-xml)
-                                     :universe
-                                     :system
-                                     :delta-orionis
-                                     :δ-ori-aa1
-                                     :radius
-                                     data.zip/text)))
+=> (time (dotimes [_ 250000] 
+           (data.zip/xml1-> (clojure.zip/xml-zip parsed-xml)
+                            :universe
+                            :system
+                            :delta-orionis
+                            :δ-ori-aa1
+                            :radius
+                            data.zip/text)))
 "Elapsed time: 13385.563442 msecs"
 ```
 
@@ -262,24 +262,27 @@ We can do better: navigate to `:universe :system :delta-orionis :δ-ori-aa1` _on
 
 to create a sub document no special syntax is needed, just search "upto" the new root element.
 
-and in cases where it is applicable, using a sub document is a lot faster:
+and in cases where it is applicable, using a sub document is a bit faster:
 
 ```clojure
-boot.user=> (time (dotimes [_ 100000]
-                    [(xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :mass])
-                     (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])
-                     (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :surface-gravity])]))
+=> (time (dotimes [_ 100000]
+           [(xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :mass])
+            (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])
+            (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :surface-gravity])]))
+
 "Elapsed time: 1075.663006 msecs"
 ```
 
 vs.
 
 ```clojure
-boot.user=> (time (dotimes [_ 100000]
-                    [(xml/find-first aa1 [:mass])
-                     (xml/find-first aa1 [:radius])
-                     (xml/find-first aa1 [:surface-gravity])]))
-"Elapsed time: 458.735225 msecs"
+=> (time (dotimes [_ 100000]
+           (let [aa1 (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1])]
+             [(xml/find-first aa1 [:mass])
+              (xml/find-first aa1 [:radius])
+              (xml/find-first aa1 [:surface-gravity])])))
+
+"Elapsed time: 906.162104 msecs"
 ```
 
 ## License
