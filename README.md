@@ -191,12 +191,12 @@ Navigation using functions, or rather transducers, adds custom "predicate batter
 A few internal batteries are included in `xml-in`:
 
 ```clojure
-=> (require '[xml-in.core :as xml :refer [tag= any-tag= attr=]])
+=> (require '[xml-in.core :as xml :refer [tag= some-tag= attr=]])
 ```
 
 * `tag=` finds child nodes under _all_ matched tags
 
-* `any-tag=` finds child nodes under _the first_ matching tag
+* `some-tag=` finds child nodes under _the first_ matching tag
 
 * `attr=` finds child nodes under all tags with attribute's key and value
 
@@ -205,7 +205,7 @@ Let's find all inhabitable planets of the solar system to the best of our knowle
 ```clojure
 => (xml/find-in universe [(tag= :universe)
                           (tag= :system)
-                          (any-tag= :solar)
+                          (some-tag= :solar)
                           (attr= :inhabitable "true")])
 "Earth"
 ```
@@ -223,10 +223,10 @@ Since `find-in` does not need to create transducers like `find-all` and `find-fi
 ```
 vs.
 ```clojure
-=> (time (dotimes [_ 250000] (xml/find-in universe [(any-tag= :universe)
-                                                    (any-tag= :system)
-                                                    (any-tag= :solar)
-                                                    (any-tag= :planet)])))
+=> (time (dotimes [_ 250000] (xml/find-in universe [(some-tag= :universe)
+                                                    (some-tag= :system)
+                                                    (some-tag= :solar)
+                                                    (some-tag= :planet)])))
 "Elapsed time: 484.393762 msecs"
 ```
 

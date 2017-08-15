@@ -33,7 +33,7 @@
   [tag]
   (find-by :tag (partial = tag)))
 
-(defn any-tag=
+(defn some-tag=
   "finds child nodes under the first matching tag 'tag'"
   [tag]
   (find-by :tag
@@ -54,7 +54,7 @@
   
   i.e. (find-in dom [(tag= :universe)
                      (tag= :galaxy)
-                     (any-tag= :planet)])"
+                     (some-tag= :planet)])"
   [dom tpath]
   (let [dom (if-not (seq? dom) [dom] dom)
         values (sequence (apply comp tpath)
@@ -83,4 +83,4 @@
   
   i.e. (find-first universe [:universe :system :solar :planet])"
   [dom path]
-  (find-in dom (map any-tag= path)))
+  (find-in dom (map some-tag= path)))
