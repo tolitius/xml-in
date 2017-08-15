@@ -146,7 +146,7 @@ All the planets are returned. In case we need "a" planet we can match the first 
 
 ```clojure
 => (xml/find-first universe [:universe :system :solar :planet])
-"Earth"
+("Earth")
 ```
 
 notice `find-all` vs. `find-first`
@@ -160,9 +160,9 @@ Let's look at the example. From the XML above, let's find a `radius` of `δ-ori-
 
 ```clojure
 => (xml/find-all universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])
-"16.5"
+("16.5")
 => (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])
-"16.5"
+("16.5")
 ```
 
 Both `find-all` and `find-first` return the same exact value, but we know for a fact that the `δ-ori-aa1` component has only _one_ `radius`. Which means it is best found with `find-first` rather than `find-all`.
@@ -172,13 +172,13 @@ Let's see the performance difference:
 ```clojure
 => (time (dotimes [_ 250000]
            (xml/find-all universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])))
-"Elapsed time: 1382.708085 msecs"
+"Elapsed time: 1216.927309 msecs"
 ```
 
 ```clojure
 => (time (dotimes [_ 250000]
            (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])))
-"Elapsed time: 808.148405 msecs"
+"Elapsed time: 792.958283 msecs"
 ```
 
 Quite a difference. The secret is quite simple: `find-first` stops searching once it finds a matching element.
@@ -207,19 +207,16 @@ Let's find all inhabitable planets of the solar system to the best of our knowle
                           (tag= :system)
                           (some-tag= :solar)
                           (attr= :inhabitable "true")])
-"Earth"
+("Earth")
 ```
 
-a `find-in` function takes a parsed XML and a sequence of transducers. It then
-  
-   * computes a sequence from the application of all the transducers composed
-   * extracts singular values from the computed sequence
+a `find-in` function takes a parsed XML and a sequence of transducers and computes a sequence from the application of all the transducers composed
 
 Since `find-in` does not need to create transducers like `find-all` and `find-first` it is a bit more performant:
 
 ```clojure
 => (time (dotimes [_ 250000] (xml/find-first universe [:universe :system :solar :planet])))
-"Elapsed time: 540.447669 msecs"
+"Elapsed time: 507.325005 msecs"
 ```
 vs.
 ```clojure
@@ -227,7 +224,7 @@ vs.
                                                     (some-tag= :system)
                                                     (some-tag= :solar)
                                                     (some-tag= :planet)])))
-"Elapsed time: 484.393762 msecs"
+"Elapsed time: 467.535705 msecs"
 ```
 
 ## Creating sub documents
@@ -236,11 +233,11 @@ Let's say we need to get several properties out of the `δ-ori-aa1` component. W
 
 ```clojure
 => (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :mass])
-"24"
+("24")
 => (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])
-"16.5"
+("16.5")
 => (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :surface-gravity])
-"3.37"
+("3.37")
 ```
 
 we can of course group `[:mass :radius :surface-gravity]` together and map over them to call `xml/find-first universe` with a prefix, but it would not change the fact that we would need to "get-into" "`:universe :system :delta-orionis :δ-ori-aa1`" on every property lookup.
@@ -253,11 +250,11 @@ We can do better: navigate to `:universe :system :delta-orionis :δ-ori-aa1` _on
 ```
 ```clojure
 => (xml/find-first aa1 [:mass])
-"24"
+("24")
 => (xml/find-first aa1 [:radius])
-"16.5"
+("16.5")
 => (xml/find-first aa1 [:surface-gravity])
-"3.37"
+("3.37")
 ```
 
 to create a sub document no special syntax is needed, just search "upto" the new root element.
@@ -270,7 +267,7 @@ and in cases where it is applicable, using a sub document is a bit faster:
             (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :radius])
             (xml/find-first universe [:universe :system :delta-orionis :δ-ori-aa1 :surface-gravity])]))
 
-"Elapsed time: 1075.663006 msecs"
+"Elapsed time: 973.376399 msecs"
 ```
 
 vs.
@@ -282,7 +279,7 @@ vs.
               (xml/find-first aa1 [:radius])
               (xml/find-first aa1 [:surface-gravity])])))
 
-"Elapsed time: 906.162104 msecs"
+"Elapsed time: 760.332762 msecs"
 ```
 
 ## License

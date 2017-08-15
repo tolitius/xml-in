@@ -49,19 +49,15 @@
   "takes the parsed XML (i.e. 'dom')
    and a 'tpath' which is a sequence of transducers.
   
-   * computes a sequence from the application of all the transducers composed
-   * extracts singular values from the computed sequence
+   computes a sequence from the application of all the transducers composed
   
-  i.e. (find-in dom [(tag= :universe)
-                     (tag= :galaxy)
-                     (some-tag= :planet)])"
+   i.e. (find-in dom [(tag= :universe)
+                      (tag= :galaxy)
+                      (some-tag= :planet)])"
   [dom tpath]
-  (let [dom (if-not (seq? dom) [dom] dom)
-        values (sequence (apply comp tpath)
-                         dom)]
-    (if (< (count values) 2)
-      (first values)
-      values)))
+  (let [dom (if-not (seq? dom) [dom] dom)]
+    (sequence (apply comp tpath)
+              dom)))
 
 ;; TODO: extend to do attrs
 (defn find-all
