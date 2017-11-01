@@ -184,6 +184,8 @@ Let's see the performance difference:
 Quite a difference. The secret is quite simple: `find-first` stops searching once it finds a matching element.
 But it does improve performance, especially for a large number of XML documents.
 
+> _NOTE: `find-first` returns a "`seq`", and not just a "single" value, so it can be composed as described in [Creating sub documents](#creating-sub-documents)_
+
 ## Functional navigation
 
 Navigation using functions, or rather transducers, adds custom "predicate batteries" to the process.
