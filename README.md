@@ -15,7 +15,7 @@ your friendly XML navigator
 
 XML is this new hot markup language everyone is raving about. Attributes, namespaces, schemas, security, XSL.. what's there not to love.
 
-`xml-in` is not about parsing XML, but rather working with already parsed XML.
+`xml-in` is _not_ about parsing XML, but rather working with already parsed XML.
 
 It takes heavily nested `{:tag .. :attrs .. :content [...]}` structures that Clojure XML parsers produce and helps to navigate these structures in a Clojure "`get-in` style" using internal and custom transducers.
 
@@ -286,7 +286,7 @@ vs.
 
 ## License
 
-Copyright © 2017 tolitius
+Copyright © 2019 tolitius
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
