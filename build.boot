@@ -1,8 +1,8 @@
-(def +version+ "0.1.1-SNAPSHOT")
+(def +version+ "0.1.1")
 
 (set-env!
   :source-paths #{"src"}
-  :dependencies '[[org.clojure/clojure             "1.8.0"]
+  :dependencies '[[org.clojure/clojure             "1.10.1" :scope "provided"]
 
                   ;; test deps
                   [org.clojure/data.xml            "0.2.0-alpha2" :scope "test"]
